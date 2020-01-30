@@ -403,7 +403,7 @@ np.random.seed(1234)
 random.seed(1234)
 
 rootpath = './video/1min/'
-picture_list, _ = make_datapath_list(rootpath)
+picture_list = make_datapath_list(rootpath)
 
 size = 256
 mean = (0.293,)
@@ -441,73 +441,73 @@ D_update, G_update, E_update = train_model(
 # --------------------
 # 2. Test
 # --------------------
-# device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-# # device_ids = [0, 1, 2, 3]
-# # if torch.cuda.is_available():
-# #     device = torch.device('cuda:{}'.format(device_ids[0]))
-# # else:
-# #     device = torch.device('cpu')
-#
-# D_state_dict = multi_state_dict('./weight/D_sync.pth',
-#                                 map_location={'cuda:0': 'cpu'})
-# G_state_dict = multi_state_dict('./weight/G_sync.pth',
-#                                 map_location={'cuda:0': 'cpu'})
-# E_state_dict = multi_state_dict('./weight/E_sync.pth',
-#                                 map_location={'cuda:0': 'cpu'})
-# # D_state_dict = torch.load('./weight/D_sync.pth',
-# #                           map_location={'cuda:0': 'cpu'})
-# # G_state_dict = torch.load('./weight/G_sync.pth',
-# #                           map_location={'cuda:0': 'cpu'})
-# # E_state_dict = torch.load('./weight/E_sync.pth',
-# #                           map_location={'cuda:0': 'cpu'})
-#
-# D.load_state_dict(D_state_dict)
-# G.load_state_dict(G_state_dict)
-# E.load_state_dict(E_state_dict)
-# print('Loaded learned weights.')
-#
-# D.to(device)
-# G.to(device)
-# E.to(device)
-#
-# D.eval()
-# G.eval()
-# E.eval()
-#
-# z_dim = 64
-# fixed_z = torch.randn(batch_size, z_dim)
-# fake_x = G(fixed_z.to(device))
-#
-# batch_iterator = iter(dataloaders_dict['test'])
-# pictures = next(batch_iterator)
-#
-# x = pictures[0:5]
-# x = x.to(device)
-#
-# z_out_real = E(x)
-# fake_x = G(z_out_real)
-#
-# total_loss, loss, residual_loss = detection(
-#     x, fake_x, z_out_real, D, alpha=0.1)
-#
-# loss = loss.cpu().detach().numpy()
-# print('total loss: {}'.format(np.round(loss, 0)))
-#
-# fig = plt.figure(figsize=(15, 5))
-# for i in range(5):
-#     _x = x[i][0].cpu().detach().numpy()
-#     _fake_x = fake_x[i][0].cpu().detach().numpy()
-#     heatmap = colormap(_x, _fake_x)
-#
-#     plt.subplot(3, 5, i + 1)
-#     plt.imshow(_x, 'gray')
-#
-#     plt.subplot(3, 5, 5 + i + 1)
-#     plt.imshow(_fake_x, 'gray')
-#
-#     plt.subplot(3, 5, 10 + i + 1)
-#     plt.imshow(heatmap)
-#
-# # plt.show()
-# plt.savefig('heatmap.png')
-# print('Save complete.')
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+# device_ids = [0, 1, 2, 3]
+# if torch.cuda.is_available():
+#     device = torch.device('cuda:{}'.format(device_ids[0]))
+# else:
+#     device = torch.device('cpu')
+
+D_state_dict = multi_state_dict('./weight/D_sync.pth',
+                                map_location={'cuda:0': 'cpu'})
+G_state_dict = multi_state_dict('./weight/G_sync.pth',
+                                map_location={'cuda:0': 'cpu'})
+E_state_dict = multi_state_dict('./weight/E_sync.pth',
+                                map_location={'cuda:0': 'cpu'})
+# D_state_dict = torch.load('./weight/D_sync.pth',
+#                           map_location={'cuda:0': 'cpu'})
+# G_state_dict = torch.load('./weight/G_sync.pth',
+#                           map_location={'cuda:0': 'cpu'})
+# E_state_dict = torch.load('./weight/E_sync.pth',
+#                           map_location={'cuda:0': 'cpu'})
+
+D.load_state_dict(D_state_dict)
+G.load_state_dict(G_state_dict)
+E.load_state_dict(E_state_dict)
+print('Loaded learned weights.')
+
+D.to(device)
+G.to(device)
+E.to(device)
+
+D.eval()
+G.eval()
+E.eval()
+
+z_dim = 64
+fixed_z = torch.randn(batch_size, z_dim)
+fake_x = G(fixed_z.to(device))
+
+batch_iterator = iter(dataloaders_dict['test'])
+pictures = next(batch_iterator)
+
+x = pictures[0:5]
+x = x.to(device)
+
+z_out_real = E(x)
+fake_x = G(z_out_real)
+
+total_loss, loss, residual_loss = detection(
+    x, fake_x, z_out_real, D, alpha=0.1)
+
+loss = loss.cpu().detach().numpy()
+print('total loss: {}'.format(np.round(loss, 0)))
+
+fig = plt.figure(figsize=(15, 5))
+for i in range(5):
+    _x = x[i][0].cpu().detach().numpy()
+    _fake_x = fake_x[i][0].cpu().detach().numpy()
+    heatmap = colormap(_x, _fake_x)
+
+    plt.subplot(3, 5, i + 1)
+    plt.imshow(_x, 'gray')
+
+    plt.subplot(3, 5, 5 + i + 1)
+    plt.imshow(_fake_x, 'gray')
+
+    plt.subplot(3, 5, 10 + i + 1)
+    plt.imshow(heatmap)
+
+# plt.show()
+plt.savefig('heatmap.png')
+print('Save complete.')
