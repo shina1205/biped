@@ -408,7 +408,7 @@ picture_list = make_datapath_list(rootpath)
 size = 256
 mean = (0.293,)
 std = (0.283,)
-dataset = GAN_Dataset(file_list=picture_list,
+dataset = GAN_Dataset(datapath_list=picture_list,
                       transform=PictureTransform(size, mean, std))
 
 train_size = 0.9
