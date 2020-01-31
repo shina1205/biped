@@ -228,7 +228,7 @@ def train_model(D, G, E, dataloaders_dict, num_epochs):
         device = torch.device('cpu')
     print('device: ', device)
 
-    lr_d = 0.0001 / 10
+    lr_d = 0.0001 / 4
     lr_g = 0.0001
     lr_e = 0.0001
     beta1, beta2 = 0.5, 0.999
@@ -434,7 +434,7 @@ D.apply(weight_init)
 G.apply(weight_init)
 E.apply(weight_init)
 
-num_epochs = 1024
+num_epochs = 16
 D_update, G_update, E_update = train_model(
     D, G, E, dataloaders_dict=dataloaders_dict, num_epochs=num_epochs)
 
