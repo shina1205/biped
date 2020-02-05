@@ -92,7 +92,7 @@ class Discriminator(nn.Module):
         self.z_layer1 = nn.Linear(z_dim, 512)
 
         self.last1 = nn.Sequential(
-            nn.Linear(64 * 16 * 16 + 512, 1024),
+            nn.Linear(64 * 4 * 4 + 512, 1024),
             nn.LeakyReLU(0.1, inplace=True))
 
         self.last2 = nn.Linear(1024, 1)
@@ -106,7 +106,7 @@ class Discriminator(nn.Module):
         z = z.view(z.shape[0], -1)
         z_out = self.z_layer1(z)
 
-        x_out = x_out.view(-1, 64 * 16 * 16)
+        x_out = x_out.view(-1, 64 * 4 * 4)
         out = torch.cat([x_out, z_out], dim=1)
         out = self.last1(out)
 
@@ -129,8 +129,8 @@ class Generator(nn.Module):
             nn.ReLU(inplace=True))
 
         self.layer2 = nn.Sequential(
-            nn.Linear(1024, 64 * 16 * 16),
-            nn.BatchNorm1d(64 * 16 * 16),
+            nn.Linear(1024, 64 * 4 * 4),
+            nn.BatchNorm1d(64 * 4 * 4),
             nn.ReLU(inplace=True))
 
         self.layer3 = nn.Sequential(
@@ -159,7 +159,7 @@ class Generator(nn.Module):
     def forward(self, z):
         out = self.layer1(z)
         out = self.layer2(out)
-        out = out.view(z.shape[0], 64, 16, 16)
+        out = out.view(z.shape[0], 64, 4, 4)
         out = self.layer3(out)
         out = self.layer4(out)
         out = self.layer5(out)
@@ -192,14 +192,14 @@ class Encoder(nn.Module):
             nn.BatchNorm2d(64),
             nn.LeakyReLU(0.1, inplace=True))
 
-        self.last = nn.Linear(64 * 62 * 62, z_dim)
+        self.last = nn.Linear(64 * 14 * 14, z_dim)
 
     def forward(self, x):
         out = self.layer1(x)
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
-        out = out.view(-1, 64 * 62 * 62)
+        out = out.view(-1, 64 * 14 * 14)
         out = self.last(out)
 
         return out
@@ -388,8 +388,8 @@ def detection(x, fake_x, z_out_real, D, alpha=0.1):
     return total_loss, loss, residual_loss
 
 
-def colormap(x, fake_x):
-    abs = np.abs(x - fake_x).reshape(256, 256, 1)
+def colormap(x, fake_x, size):
+    abs = np.abs(x - fake_x).reshape(size, size, 1)
 
     colormap = cv2.applyColorMap(np.uint8(255 * abs), cv2.COLORMAP_JET)
     colormap = cv2.cvtColor(colormap, cv2.COLOR_BGR2RGB)
@@ -405,7 +405,7 @@ random.seed(1234)
 rootpath = './video/1min/'
 picture_list = make_datapath_list(rootpath)
 
-size = 256
+size = 64
 mean = (0.293,)
 std = (0.283,)
 dataset = GAN_Dataset(datapath_list=picture_list,
@@ -434,7 +434,7 @@ D.apply(weight_init)
 G.apply(weight_init)
 E.apply(weight_init)
 
-num_epochs = 16
+num_epochs = 4
 D_update, G_update, E_update = train_model(
     D, G, E, dataloaders_dict=dataloaders_dict, num_epochs=num_epochs)
 
@@ -454,12 +454,6 @@ G_state_dict = multi_state_dict('./weight/G_sync.pth',
                                 map_location={'cuda:0': 'cpu'})
 E_state_dict = multi_state_dict('./weight/E_sync.pth',
                                 map_location={'cuda:0': 'cpu'})
-# D_state_dict = torch.load('./weight/D_sync.pth',
-#                           map_location={'cuda:0': 'cpu'})
-# G_state_dict = torch.load('./weight/G_sync.pth',
-#                           map_location={'cuda:0': 'cpu'})
-# E_state_dict = torch.load('./weight/E_sync.pth',
-#                           map_location={'cuda:0': 'cpu'})
 
 D.load_state_dict(D_state_dict)
 G.load_state_dict(G_state_dict)
@@ -497,7 +491,7 @@ fig = plt.figure(figsize=(15, 5))
 for i in range(5):
     _x = x[i][0].cpu().detach().numpy()
     _fake_x = fake_x[i][0].cpu().detach().numpy()
-    heatmap = colormap(_x, _fake_x)
+    heatmap = colormap(_x, _fake_x, size)
 
     plt.subplot(3, 5, i + 1)
     plt.imshow(_x, 'gray')
