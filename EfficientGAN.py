@@ -67,33 +67,33 @@ class GAN_Dataset(data.Dataset):
 
 class Discriminator(nn.Module):
 
-    def __init__(self, z_dim=64):
+    def __init__(self, z_dim=100):
         super(Discriminator, self).__init__()
 
         self.x_layer1 = nn.Sequential(
             nn.Conv2d(1, 64, kernel_size=4, stride=2, padding=1),
-            nn.LeakyReLU(0.1, inplace=True))
+            nn.LeakyReLU(0.2, inplace=True))
 
         self.x_layer2 = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.1, inplace=True))
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.2, inplace=True))
 
         self.x_layer3 = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.1, inplace=True))
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(0.2, inplace=True))
 
         self.x_layer4 = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.1, inplace=True))
+            nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(512),
+            nn.LeakyReLU(0.2, inplace=True))
 
         self.z_layer1 = nn.Linear(z_dim, 512)
 
         self.last1 = nn.Sequential(
-            nn.Linear(64 * 4 * 4 + 512, 1024),
-            nn.LeakyReLU(0.1, inplace=True))
+            nn.Linear(512 * 4 * 4 + 512, 1024),
+            nn.LeakyReLU(0.2, inplace=True))
 
         self.last2 = nn.Linear(1024, 1)
 
@@ -106,7 +106,7 @@ class Discriminator(nn.Module):
         z = z.view(z.shape[0], -1)
         z_out = self.z_layer1(z)
 
-        x_out = x_out.view(-1, 64 * 4 * 4)
+        x_out = x_out.view(-1, 512 * 4 * 4)
         out = torch.cat([x_out, z_out], dim=1)
         out = self.last1(out)
 
@@ -120,33 +120,29 @@ class Discriminator(nn.Module):
 
 class Generator(nn.Module):
 
-    def __init__(self, z_dim=64):
+    def __init__(self, z_dim=100):
         super(Generator, self).__init__()
 
         self.layer1 = nn.Sequential(
-            nn.Linear(z_dim, 1024),
-            nn.BatchNorm1d(1024),
+            nn.ConvTranspose2d(in_channels=z_dim, out_channels=512,
+                               kernel_size=4, stride=1, padding=0),
+            nn.BatchNorm2d(512),
             nn.ReLU(inplace=True))
 
         self.layer2 = nn.Sequential(
-            nn.Linear(1024, 64 * 4 * 4),
-            nn.BatchNorm1d(64 * 4 * 4),
+            nn.ConvTranspose2d(in_channels=512, out_channels=256,
+                               kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(256),
             nn.ReLU(inplace=True))
 
         self.layer3 = nn.Sequential(
-            nn.ConvTranspose2d(in_channels=64, out_channels=64,
+            nn.ConvTranspose2d(in_channels=256, out_channels=128,
                                kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(64),
+            nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
 
         self.layer4 = nn.Sequential(
-            nn.ConvTranspose2d(in_channels=64, out_channels=64,
-                               kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True))
-
-        self.layer5 = nn.Sequential(
-            nn.ConvTranspose2d(in_channels=64, out_channels=64,
+            nn.ConvTranspose2d(in_channels=128, out_channels=64,
                                kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
@@ -157,12 +153,10 @@ class Generator(nn.Module):
             nn.Tanh())
 
     def forward(self, z):
-        out = self.layer1(z)
+        out = self.layer1(out)
         out = self.layer2(out)
-        out = out.view(z.shape[0], 64, 4, 4)
         out = self.layer3(out)
         out = self.layer4(out)
-        out = self.layer5(out)
         out = self.last(out)
 
         return out
@@ -170,36 +164,36 @@ class Generator(nn.Module):
 
 class Encoder(nn.Module):
 
-    def __init__(self, z_dim=64):
+    def __init__(self, z_dim=100):
         super(Encoder, self).__init__()
 
         self.layer1 = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=5, stride=2, padding=0),
-            nn.LeakyReLU(0.1, inplace=True))
+            nn.Conv2d(1, 64, kernel_size=3, stride=1, padding=0),
+            nn.LeakyReLU(0.2, inplace=True))
 
         self.layer2 = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=5, stride=2, padding=1),
-            nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.1, inplace=True))
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.2, inplace=True))
 
         self.layer3 = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.1, inplace=True))
+            nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(0.2, inplace=True))
 
         self.layer4 = nn.Sequential(
-            nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(64),
-            nn.LeakyReLU(0.1, inplace=True))
+            nn.Conv2d(256, 512, kernel_size=3, stride=2, padding=1),
+            nn.BatchNorm2d(512),
+            nn.LeakyReLU(0.2, inplace=True))
 
-        self.last = nn.Linear(64 * 14 * 14, z_dim)
+        self.last = nn.Linear(512 * 8 * 8, z_dim)
 
     def forward(self, x):
         out = self.layer1(x)
         out = self.layer2(out)
         out = self.layer3(out)
         out = self.layer4(out)
-        out = out.view(-1, 64 * 14 * 14)
+        out = out.view(-1, 512 * 8 * 8)
         out = self.last(out)
 
         return out
@@ -228,7 +222,7 @@ def train_model(D, G, E, dataloaders_dict, num_epochs):
         device = torch.device('cpu')
     print('device: ', device)
 
-    lr_d = 0.0001 / 10
+    lr_d = 0.0001 / 4
     lr_g = 0.0001
     lr_e = 0.0001
     beta1, beta2 = 0.5, 0.999
@@ -238,8 +232,8 @@ def train_model(D, G, E, dataloaders_dict, num_epochs):
 
     criterion = nn.BCEWithLogitsLoss(reduction='mean')
 
-    z_dim = 64
-    mini_batch_size = 64
+    z_dim = 100
+    mini_batch_size = 256
 
     D = convert_model(nn.DataParallel(D))
     G = convert_model(nn.DataParallel(G))
@@ -415,7 +409,7 @@ train_size = 0.9
 train_dataset, test_dataset = train_test_split(
     dataset, train_size=train_size, shuffle=False)
 
-batch_size = 64
+batch_size = 256
 train_dataloader = data.DataLoader(
     train_dataset, batch_size=batch_size, shuffle=True)
 test_dataloader = data.DataLoader(
@@ -423,9 +417,9 @@ test_dataloader = data.DataLoader(
 
 dataloaders_dict = {'train': train_dataloader, 'test': test_dataloader}
 
-D = Discriminator(z_dim=64)
-G = Generator(z_dim=64)
-E = Encoder(z_dim=64)
+D = Discriminator(z_dim=100)
+G = Generator(z_dim=100)
+E = Encoder(z_dim=100)
 
 # --------------------
 # 1. Train
@@ -434,7 +428,7 @@ D.apply(weight_init)
 G.apply(weight_init)
 E.apply(weight_init)
 
-num_epochs = 64
+num_epochs = 4
 D_update, G_update, E_update = train_model(
     D, G, E, dataloaders_dict=dataloaders_dict, num_epochs=num_epochs)
 
@@ -468,7 +462,7 @@ D.eval()
 G.eval()
 E.eval()
 
-z_dim = 64
+z_dim = 100
 fixed_z = torch.randn(batch_size, z_dim)
 fake_x = G(fixed_z.to(device))
 
