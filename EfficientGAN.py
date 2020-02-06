@@ -153,6 +153,7 @@ class Generator(nn.Module):
             nn.Tanh())
 
     def forward(self, z):
+        z = z.view(z.size(0), z.size(1), 1, 1)
         out = self.layer1(z)
         out = self.layer2(out)
         out = self.layer3(out)
