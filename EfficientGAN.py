@@ -19,6 +19,7 @@ from torchvision import transforms
 from sklearn.model_selection import train_test_split
 from sync_batchnorm import convert_model
 from collections import OrderedDict
+from tensorboardX import SummaryWriter
 
 
 def make_datapath_list(rootpath):
@@ -100,7 +101,9 @@ class Discriminator(nn.Module):
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout(p=0.5))
 
-        self.last2 = nn.Linear(1024, 1)
+        self.last2 = nn.Sequential(
+            nn.Linear(1024, 1),
+            nn.Sigmoid())
 
     def forward(self, x, z):
         x_out = self.x_layer1(x)
@@ -261,6 +264,8 @@ def train_model(D, G, E, dataloaders_dict, num_epochs):
     iteration = 1
     logs = []
 
+    writer = SummaryWriter('./tbX/')
+
     for epoch in range(num_epochs):
         t_epoch_start = time.time()
         epoch_d_loss = 0.0
@@ -349,9 +354,15 @@ def train_model(D, G, E, dataloaders_dict, num_epochs):
         df = pd.DataFrame(logs)
         df.to_csv('log_GAN.csv')
 
+        writer.add_scalar('D_loss', epoch_d_loss / batch_size, epoch)
+        writer.add_scalar('G_loss', epoch_g_loss / batch_size, epoch)
+        writer.add_scalar('E_loss', epoch_e_loss / batch_size, epoch)
+
     torch.save(D.state_dict(), 'weight/D_sync.pth')
     torch.save(G.state_dict(), 'weight/G_sync.pth')
     torch.save(E.state_dict(), 'weight/E_sync.pth')
+
+    writer.close()
 
     return D, G, E
 
