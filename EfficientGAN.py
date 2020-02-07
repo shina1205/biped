@@ -227,9 +227,9 @@ def train_model(D, G, E, dataloaders_dict, num_epochs):
         device = torch.device('cpu')
     print('device: ', device)
 
-    lr_d = 0.0002
-    lr_g = 0.0002
-    lr_e = 0.0002
+    lr_d = 0.0001 / 4
+    lr_g = 0.0001
+    lr_e = 0.0001
     beta1, beta2 = 0.5, 0.999
     d_optimizer = torch.optim.Adam(D.parameters(), lr_d, [beta1, beta2])
     g_optimizer = torch.optim.Adam(G.parameters(), lr_g, [beta1, beta2])
@@ -433,7 +433,7 @@ D.apply(weight_init)
 G.apply(weight_init)
 E.apply(weight_init)
 
-num_epochs = 4
+num_epochs = 16
 D_update, G_update, E_update = train_model(
     D, G, E, dataloaders_dict=dataloaders_dict, num_epochs=num_epochs)
 
