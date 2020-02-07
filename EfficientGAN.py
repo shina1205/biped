@@ -72,22 +72,26 @@ class Discriminator(nn.Module):
 
         self.x_layer1 = nn.Sequential(
             nn.Conv2d(1, 64, kernel_size=4, stride=2, padding=1),
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout2d(p=0.5))
 
         self.x_layer2 = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(128),
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout2d(p=0.5))
 
         self.x_layer3 = nn.Sequential(
             nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(256),
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout2d(p=0.5))
 
         self.x_layer4 = nn.Sequential(
             nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1),
             nn.BatchNorm2d(512),
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout2d(p=0.5))
 
         self.z_layer1 = nn.Linear(z_dim, 512)
 
