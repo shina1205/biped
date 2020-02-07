@@ -97,7 +97,8 @@ class Discriminator(nn.Module):
 
         self.last1 = nn.Sequential(
             nn.Linear(512 * 4 * 4 + 512, 1024),
-            nn.LeakyReLU(0.2, inplace=True))
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.Dropout(p=0.5))
 
         self.last2 = nn.Linear(1024, 1)
 
@@ -227,7 +228,7 @@ def train_model(D, G, E, dataloaders_dict, num_epochs):
         device = torch.device('cpu')
     print('device: ', device)
 
-    lr_d = 0.0001 / 4
+    lr_d = 0.0001 / 10
     lr_g = 0.0001
     lr_e = 0.0001
     beta1, beta2 = 0.5, 0.999
