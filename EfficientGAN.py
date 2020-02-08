@@ -207,6 +207,156 @@ class Encoder(nn.Module):
         return out
 
 
+class Discriminator_run(nn.Module):
+
+    def __init__(self, z_dim=100):
+        super(Discriminator_run, self).__init__()
+
+        self.x_layer1 = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=4, stride=2, padding=1),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Dropout2d(p=0.5))
+
+        self.x_layer2 = nn.Sequential(
+            nn.Conv2d(16, 64, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Dropout2d(p=0.5))
+
+        self.x_layer3 = nn.Sequential(
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Dropout2d(p=0.5))
+
+        self.x_layer4 = nn.Sequential(
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Dropout2d(p=0.5))
+
+        self.z_layer1 = nn.Linear(z_dim, 512)
+
+        self.last1 = nn.Sequential(
+            nn.Linear(256 * 16 * 16 + 512, 1024),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Dropout(p=0.5))
+
+        self.last2 = nn.Linear(1024, 1)
+
+    def forward(self, x, z):
+        x_out = self.x_layer1(x)
+        x_out = self.x_layer2(x_out)
+        x_out = self.x_layer3(x_out)
+        x_out = self.x_layer4(x_out)
+
+        z = z.view(z.shape[0], -1)
+        z_out = self.z_layer1(z)
+
+        x_out = x_out.view(-1, 256 * 16 * 16)
+        out = torch.cat([x_out, z_out], dim=1)
+        out = self.last1(out)
+
+        feature = out
+        feature = feature.view(feature.size()[0], -1)
+
+        out = self.last2(out)
+
+        return out, feature
+
+
+class Generator_run(nn.Module):
+
+    def __init__(self, z_dim=100):
+        super(Generator_run, self).__init__()
+
+        self.layer1 = nn.Sequential(
+            nn.Linear(z_dim, 1024),
+            nn.BatchNorm1d(1024),
+            nn.ReLU(inplace=True))
+
+        self.layer2 = nn.Sequential(
+            nn.Linear(1024, 256 * 16 * 16),
+            nn.BatchNorm1d(256 * 16 * 16),
+            nn.ReLU(inplace=True))
+
+        self.layer3 = nn.Sequential(
+            nn.ConvTranspose2d(in_channels=256, out_channels=128,
+                               kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True))
+
+        self.layer4 = nn.Sequential(
+            nn.ConvTranspose2d(in_channels=128, out_channels=64,
+                               kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True))
+
+        self.layer5 = nn.Sequential(
+            nn.ConvTranspose2d(in_channels=64, out_channels=16,
+                               kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(16),
+            nn.ReLU(inplace=True))
+
+        self.last = nn.Sequential(
+            nn.ConvTranspose2d(in_channels=16, out_channels=1,
+                               kernel_size=4, stride=2, padding=1),
+            nn.Tanh())
+
+    def forward(self, z):
+        out = self.layer1(z)
+        out = self.layer2(out)
+        out = out.view(z.shape[0], 256, 16, 16)
+        out = self.layer3(out)
+        out = self.layer4(out)
+        out = self.layer5(out)
+        out = self.last(out)
+
+        return out
+
+
+class Encoder_run(nn.Module):
+
+    def __init__(self, z_dim=100):
+        super(Encoder_run, self).__init__()
+
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=3, stride=1, padding=0),
+            nn.LeakyReLU(0.1, inplace=True))
+
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(16, 64, kernel_size=3, stride=2, padding=1),
+            nn.BatchNorm2d(64),
+            nn.LeakyReLU(0.1, inplace=True))
+
+        self.layer3 = nn.Sequential(
+            nn.Conv2d(64, 128, kernel_size=3, stride=2, padding=1),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.1, inplace=True))
+
+        self.layer4 = nn.Sequential(
+            nn.Conv2d(128, 256, kernel_size=3, stride=2, padding=1),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(0.1, inplace=True))
+
+        self.last1 = nn.Sequential(
+            nn.Linear(256 * 32 * 32, 1024),
+            nn.LeakyReLU(0.1, inplace=True))
+
+        self.last2 = nn.Linear(1024, z_dim)
+
+    def forward(self, x):
+        out = self.layer1(x)
+        out = self.layer2(out)
+        out = self.layer3(out)
+        out = self.layer4(out)
+        out = out.view(-1, 256 * 32 * 32)
+        out = self.last1(out)
+        out = self.last2(out)
+
+        return out
+
+
 def weight_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -415,7 +565,7 @@ random.seed(1234)
 rootpath = './video/1min/'
 picture_list = make_datapath_list(rootpath)
 
-size = 64
+size = 256
 mean = (0.293,)
 std = (0.283,)
 dataset = GAN_Dataset(datapath_list=picture_list,
@@ -433,9 +583,12 @@ test_dataloader = data.DataLoader(
 
 dataloaders_dict = {'train': train_dataloader, 'test': test_dataloader}
 
-D = Discriminator(z_dim=100)
-G = Generator(z_dim=100)
-E = Encoder(z_dim=100)
+# D = Discriminator(z_dim=100)
+# G = Generator(z_dim=100)
+# E = Encoder(z_dim=100)
+D = Discriminator_run(z_dim=100)
+G = Generator_run(z_dim=100)
+E = Encoder_run(z_dim=100)
 
 # --------------------
 # 1. Train
