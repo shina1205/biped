@@ -575,7 +575,7 @@ train_size = 0.9
 train_dataset, test_dataset = train_test_split(
     dataset, train_size=train_size, shuffle=True)
 
-batch_size = 100
+batch_size = 64
 train_dataloader = data.DataLoader(
     train_dataset, batch_size=batch_size, shuffle=True)
 test_dataloader = data.DataLoader(
@@ -597,7 +597,7 @@ D.apply(weight_init)
 G.apply(weight_init)
 E.apply(weight_init)
 
-num_epochs = 1024
+num_epochs = 64
 D_update, G_update, E_update = train_model(
     D, G, E, dataloaders_dict=dataloaders_dict, num_epochs=num_epochs)
 
