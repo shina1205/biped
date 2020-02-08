@@ -423,11 +423,11 @@ dataset = GAN_Dataset(datapath_list=picture_list,
 
 train_size = 0.9
 train_dataset, test_dataset = train_test_split(
-    dataset, train_size=train_size, shuffle=False)
+    dataset, train_size=train_size, shuffle=True)
 
 batch_size = 256
 train_dataloader = data.DataLoader(
-    train_dataset, batch_size=batch_size, shuffle=False)
+    train_dataset, batch_size=batch_size, shuffle=True)
 test_dataloader = data.DataLoader(
     test_dataset, batch_size=batch_size, shuffle=False)
 
