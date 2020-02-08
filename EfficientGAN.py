@@ -102,8 +102,7 @@ class Discriminator(nn.Module):
             nn.Dropout(p=0.5))
 
         self.last2 = nn.Sequential(
-            nn.Linear(1024, 1),
-            nn.Sigmoid())
+            nn.Linear(1024, 1))
 
     def forward(self, x, z):
         x_out = self.x_layer1(x)
@@ -428,7 +427,7 @@ train_dataset, test_dataset = train_test_split(
 
 batch_size = 256
 train_dataloader = data.DataLoader(
-    train_dataset, batch_size=batch_size, shuffle=True)
+    train_dataset, batch_size=batch_size, shuffle=False)
 test_dataloader = data.DataLoader(
     test_dataset, batch_size=batch_size, shuffle=False)
 
