@@ -575,7 +575,7 @@ train_size = 0.9
 train_dataset, test_dataset = train_test_split(
     dataset, train_size=train_size, shuffle=True)
 
-batch_size = 64
+batch_size = 200
 train_dataloader = data.DataLoader(
     train_dataset, batch_size=batch_size, shuffle=True)
 test_dataloader = data.DataLoader(
