@@ -68,7 +68,7 @@ class GAN_Dataset(data.Dataset):
 
 class Discriminator(nn.Module):
 
-    def __init__(self, z_dim=100):
+    def __init__(self, z_dim=64):
         super(Discriminator, self).__init__()
 
         self.x_layer1 = nn.Sequential(
@@ -127,7 +127,7 @@ class Discriminator(nn.Module):
 
 class Generator(nn.Module):
 
-    def __init__(self, z_dim=100):
+    def __init__(self, z_dim=64):
         super(Generator, self).__init__()
 
         self.layer1 = nn.Sequential(
@@ -172,7 +172,7 @@ class Generator(nn.Module):
 
 class Encoder(nn.Module):
 
-    def __init__(self, z_dim=100):
+    def __init__(self, z_dim=64):
         super(Encoder, self).__init__()
 
         self.layer1 = nn.Sequential(
@@ -209,7 +209,7 @@ class Encoder(nn.Module):
 
 class Discriminator_run(nn.Module):
 
-    def __init__(self, z_dim=100):
+    def __init__(self, z_dim=64):
         super(Discriminator_run, self).__init__()
 
         self.x_layer1 = nn.Sequential(
@@ -267,7 +267,7 @@ class Discriminator_run(nn.Module):
 
 class Generator_run(nn.Module):
 
-    def __init__(self, z_dim=100):
+    def __init__(self, z_dim=64):
         super(Generator_run, self).__init__()
 
         self.layer1 = nn.Sequential(
@@ -317,7 +317,7 @@ class Generator_run(nn.Module):
 
 class Encoder_run(nn.Module):
 
-    def __init__(self, z_dim=100):
+    def __init__(self, z_dim=64):
         super(Encoder_run, self).__init__()
 
         self.layer1 = nn.Sequential(
@@ -390,7 +390,7 @@ def train_model(D, G, E, dataloaders_dict, num_epochs):
 
     criterion = nn.BCEWithLogitsLoss(reduction='mean')
 
-    z_dim = 100
+    z_dim = 64
     mini_batch_size = 64
 
     D = convert_model(nn.DataParallel(D))
@@ -586,9 +586,9 @@ dataloaders_dict = {'train': train_dataloader, 'test': test_dataloader}
 # D = Discriminator(z_dim=100)
 # G = Generator(z_dim=100)
 # E = Encoder(z_dim=100)
-D = Discriminator_run(z_dim=100)
-G = Generator_run(z_dim=100)
-E = Encoder_run(z_dim=100)
+D = Discriminator_run(z_dim=64)
+G = Generator_run(z_dim=64)
+E = Encoder_run(z_dim=64)
 
 # --------------------
 # 1. Train
@@ -631,7 +631,7 @@ D.eval()
 G.eval()
 E.eval()
 
-z_dim = 100
+z_dim = 64
 fixed_z = torch.randn(batch_size, z_dim)
 fake_x = G(fixed_z.to(device))
 
