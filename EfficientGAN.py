@@ -390,7 +390,7 @@ def train_model(D, G, E, dataloaders_dict, num_epochs):
 
     criterion = nn.BCEWithLogitsLoss(reduction='mean')
 
-    z_dim = 64
+    z_dim = 100
     mini_batch_size = 64
 
     D = convert_model(nn.DataParallel(D))
