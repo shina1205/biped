@@ -223,22 +223,27 @@ class Discriminator_run(nn.Module):
             nn.LeakyReLU(0.1, inplace=True),
             nn.Dropout2d(p=0.5))
 
-        self.x_layer3 = nn.Sequential(
-            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(128),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Dropout2d(p=0.5))
-
-        self.x_layer4 = nn.Sequential(
-            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
-            nn.BatchNorm2d(256),
-            nn.LeakyReLU(0.1, inplace=True),
-            nn.Dropout2d(p=0.5))
+        # self.x_layer3 = nn.Sequential(
+        #     nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
+        #     nn.BatchNorm2d(128),
+        #     nn.LeakyReLU(0.1, inplace=True),
+        #     nn.Dropout2d(p=0.5))
+        #
+        # self.x_layer4 = nn.Sequential(
+        #     nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
+        #     nn.BatchNorm2d(256),
+        #     nn.LeakyReLU(0.1, inplace=True),
+        #     nn.Dropout2d(p=0.5))
 
         self.z_layer1 = nn.Linear(z_dim, 512)
 
+        # self.last1 = nn.Sequential(
+        #     nn.Linear(256 * 16 * 16 + 512, 1024),
+        #     nn.LeakyReLU(0.1, inplace=True),
+        #     nn.Dropout(p=0.5))
+
         self.last1 = nn.Sequential(
-            nn.Linear(256 * 16 * 16 + 512, 1024),
+            nn.Linear(64 * 64 * 64 + 512, 1024),
             nn.LeakyReLU(0.1, inplace=True),
             nn.Dropout(p=0.5))
 
@@ -247,13 +252,14 @@ class Discriminator_run(nn.Module):
     def forward(self, x, z):
         x_out = self.x_layer1(x)
         x_out = self.x_layer2(x_out)
-        x_out = self.x_layer3(x_out)
-        x_out = self.x_layer4(x_out)
+        # x_out = self.x_layer3(x_out)
+        # x_out = self.x_layer4(x_out)
 
         z = z.view(z.shape[0], -1)
         z_out = self.z_layer1(z)
 
-        x_out = x_out.view(-1, 256 * 16 * 16)
+        # x_out = x_out.view(-1, 256 * 16 * 16)
+        x_out = x_out.view(-1, 64 * 64 * 64)
         out = torch.cat([x_out, z_out], dim=1)
         out = self.last1(out)
 
@@ -597,9 +603,10 @@ D.apply(weight_init)
 G.apply(weight_init)
 E.apply(weight_init)
 
-num_epochs = 128
+num_epochs = 16
 D_update, G_update, E_update = train_model(
-    D, G, E, dataloaders_dict=dataloaders_dict, num_epochs=num_epochs)
+    D, G, E, dataloader
+    s_dict=dataloaders_dict, num_epochs=num_epochs)
 
 # --------------------
 # 2. Test
@@ -643,6 +650,7 @@ x = x.to(device)
 
 z_out_real = E(x)
 fake_x = G(z_out_real)
+
 
 total_loss, loss, residual_loss = detection(
     x, fake_x, z_out_real, D, alpha=0.1)
