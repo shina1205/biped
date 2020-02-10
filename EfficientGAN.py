@@ -223,43 +223,43 @@ class Discriminator_run(nn.Module):
             nn.LeakyReLU(0.1, inplace=True),
             nn.Dropout2d(p=0.5))
 
-        # self.x_layer3 = nn.Sequential(
-        #     nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
-        #     nn.BatchNorm2d(128),
-        #     nn.LeakyReLU(0.1, inplace=True),
-        #     nn.Dropout2d(p=0.5))
-        #
-        # self.x_layer4 = nn.Sequential(
-        #     nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
-        #     nn.BatchNorm2d(256),
-        #     nn.LeakyReLU(0.1, inplace=True),
-        #     nn.Dropout2d(p=0.5))
+        self.x_layer3 = nn.Sequential(
+            nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(128),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Dropout2d(p=0.5))
+
+        self.x_layer4 = nn.Sequential(
+            nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1),
+            nn.BatchNorm2d(256),
+            nn.LeakyReLU(0.1, inplace=True),
+            nn.Dropout2d(p=0.5))
 
         self.z_layer1 = nn.Linear(z_dim, 512)
 
-        # self.last1 = nn.Sequential(
-        #     nn.Linear(256 * 16 * 16 + 512, 1024),
-        #     nn.LeakyReLU(0.1, inplace=True),
-        #     nn.Dropout(p=0.5))
-
         self.last1 = nn.Sequential(
-            nn.Linear(64 * 64 * 64 + 512, 1024),
+            nn.Linear(256 * 16 * 16 + 512, 1024),
             nn.LeakyReLU(0.1, inplace=True),
             nn.Dropout(p=0.5))
+
+        # self.last1 = nn.Sequential(
+        #     nn.Linear(64 * 64 * 64 + 512, 1024),
+        #     nn.LeakyReLU(0.1, inplace=True),
+        #     nn.Dropout(p=0.5))
 
         self.last2 = nn.Linear(1024, 1)
 
     def forward(self, x, z):
         x_out = self.x_layer1(x)
         x_out = self.x_layer2(x_out)
-        # x_out = self.x_layer3(x_out)
-        # x_out = self.x_layer4(x_out)
+        x_out = self.x_layer3(x_out)
+        x_out = self.x_layer4(x_out)
 
         z = z.view(z.shape[0], -1)
         z_out = self.z_layer1(z)
 
-        # x_out = x_out.view(-1, 256 * 16 * 16)
-        x_out = x_out.view(-1, 64 * 64 * 64)
+        x_out = x_out.view(-1, 256 * 16 * 16)
+        # x_out = x_out.view(-1, 64 * 64 * 64)
         out = torch.cat([x_out, z_out], dim=1)
         out = self.last1(out)
 
@@ -577,9 +577,9 @@ std = (0.283,)
 dataset = GAN_Dataset(datapath_list=picture_list,
                       transform=PictureTransform(size, mean, std))
 
-train_size = 0.9
+train_size = 0.8
 train_dataset, test_dataset = train_test_split(
-    dataset, train_size=train_size, shuffle=True)
+    dataset, train_size=train_size, shuffle=False)
 
 batch_size = 64
 train_dataloader = data.DataLoader(
