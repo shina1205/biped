@@ -605,8 +605,7 @@ E.apply(weight_init)
 
 num_epochs = 16
 D_update, G_update, E_update = train_model(
-    D, G, E, dataloader
-    s_dict=dataloaders_dict, num_epochs=num_epochs)
+    D, G, E, dataloaders_dict=dataloaders_dict, num_epochs=num_epochs)
 
 # --------------------
 # 2. Test
